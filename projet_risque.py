@@ -1,6 +1,7 @@
 import pandas as pd
 from pathlib import Path
 
+print("Ca marche")
 # Chargement de la base ; la première colonne du CSV contient l'index.
 chemin_data = Path.home() / "Downloads" / "data.csv"
 data = pd.read_csv(chemin_data, index_col=0, low_memory=False)
