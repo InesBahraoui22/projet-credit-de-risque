@@ -1,7 +1,8 @@
 import pandas as pd
+import ast
+import math
 from pathlib import Path
 
-print("Ca marche")
 # Chargement de la base ; la première colonne du CSV contient l'index.
 chemin_data = Path.home() / "Downloads" / "data.csv"
 data = pd.read_csv(chemin_data, index_col=0, low_memory=False)
@@ -33,8 +34,182 @@ nb_doublons = int(data.duplicated().sum())
 data = data.drop_duplicates(keep="first").copy()
 print(f"Doublons supprimés : {nb_doublons} ; lignes restantes : {len(data)}")
 
+# Colonnes retirées pour le nettoyage (noms tels qu'ils figurent dans le CSV).
+colonnes_a_supprimer = [
+    "conso_date_debut",
+    "conso_date_fin",
+    "conso_duree",
+    "anciennete_emp",
+    "contrat_mariage_emp",
+    "csp_emp",
+    "immo_date_debut",
+    "immo_date_fin",
+    "immo_duree",
+    "immo_libelle",
+    "valeur_gage",
+    "valeur_residence_principale",
+    "valeur_bien_immobilier",
+    "valeur_produit_epargne_placement",
+    "date_acquisition",
+    "valeur_acquisition",
+    "nb_etablissement_ficp",
+    "conso_conserve",
+    "immo_conserve",
+    "rc_id",
+    "commentaire",
+    "segmentation",
+    "hebergement_gratuit_emp",
+    "type_invalidite_coemp",
+    "date_deja_rachat",
+    "type_invalidite_emp",
+    "contrat_mariage_coemp",
+    "hebergement_gratuit_coemp",
+]
+data = data.drop(columns=colonnes_a_supprimer)
+print(f"Colonnes supprimées : {len(colonnes_a_supprimer)} ; colonnes restantes : {data.shape[1]}")
+
+# Garder uniquement les dossiers sans co-emprunteur.
+# Un identifiant coemp_id absent indique ici l'absence de co-emprunteur.
+avec_coemprunteur = data["coemp_id"].notna()
+print(f"Dossiers avec co-emprunteur supprimés : {avec_coemprunteur.sum()}")
+data = data.loc[~avec_coemprunteur].copy()
+colonnes_coemp = [colonne for colonne in data.columns if "coemp" in colonne]
+data = data.drop(columns=colonnes_coemp)
+print(f"Dossiers sans co-emprunteur conservés : {len(data)}")
+
+# Une échéance de retard non nulle suffit pour indiquer un retard.
+def a_un_retard(valeur):
+    if pd.isna(valeur):
+        return False
+    montants = ast.literal_eval(valeur) if isinstance(valeur, str) else valeur
+    if not isinstance(montants, list):
+        montants = [montants]
+    return any(pd.notna(montant) and montant != 0 for montant in montants)
+
+for colonne in ["conso_echeance_de_retard", "immo_echeance_de_retard"]:
+    data[colonne] = data[colonne].map(a_un_retard)
+
+# Vrai si au moins un des trois fichages est vrai ; faux si les trois sont faux.
+data["fichage_BDF"] = (
+    data["fichage_FCC_carte"].astype("boolean")
+    | data["fichage_FCC_cheque"].astype("boolean")
+    | data["fichage_FICP"].astype("boolean")
+)
+data = data.drop(columns=["fichage_FCC_carte", "fichage_FCC_cheque", "fichage_FICP"])
+
+# Faux si le montant est absent ou nul, vrai sinon.
+for colonne in ["tresorerie", "tresorerie_sur_facture"]:
+    data[colonne] = data[colonne].fillna(0).ne(0)
+
 print("\nÉtats conservés :")
 print(data["etat"].value_counts(dropna=False))
+
+# Horizon du rendez-vous : délai en jours depuis la prise de rendez-vous.
+# On garde les dates originales ; une date illisible donne une valeur manquante.
+date_prise_rdv = pd.to_datetime(data["date_aboutisant_azur"], format="%Y-%m-%d", errors="coerce")
+date_rendez_vous = pd.to_datetime(data["date_rdv"], format="%Y-%m-%d", errors="coerce")
+data["horizon_rdv"] = (date_rendez_vous - date_prise_rdv).dt.days
+print(f"\nHorizons RDV négatifs à vérifier : {data['horizon_rdv'].lt(0).sum()}")
+
+# Années restantes avant la retraite à la date de prise du rendez-vous.
+# Une valeur négative signifie que la date de retraite indiquée est déjà passée.
+# Une date absente ou illisible reste manquante ; 365.25 convertit les jours
+# en années approximatives, sans arrondir les valeurs utilisées pour l'analyse.
+date_retraite = pd.to_datetime(data["date_retraite_emp"], format="%Y-%m-%d", errors="coerce")
+data["horizon_retraite"] = (date_retraite - date_prise_rdv).dt.days / 365.25
+
+# Les capitaux restants dus (CRD) sont stockés comme des listes de montants.
+# Exemple : "[1000, 2500]" -> 2 crédits et 3500 de capital restant dû.
+# Une liste vide donne 0 crédit et 0 de cumul ; une donnée absente/illisible
+# reste manquante. On ne confond pas montant manquant et montant nul.
+def resumer_credits(valeur):
+    if pd.isna(valeur):
+        return float("nan"), float("nan")
+    try:
+        montants = ast.literal_eval(valeur)
+    except (ValueError, SyntaxError):
+        return float("nan"), float("nan")
+    if not isinstance(montants, list):
+        return float("nan"), float("nan")
+    nombre = len(montants)
+    # Un montant inconnu empêche de calculer un total complet, mais pas
+    # de compter les entrées de la liste.
+    if any(isinstance(x, bool) or not isinstance(x, (int, float))
+           or not math.isfinite(x) for x in montants):
+        return nombre, float("nan")
+    return nombre, sum(montants)
+
+for famille in ["conso", "immo"]:
+    statistiques_credits = data[f"{famille}_crd"].map(resumer_credits)
+    data[f"nombre_credits_{famille}"] = statistiques_credits.map(lambda x: x[0]).astype("Int64")
+    data[f"cumul_crd_{famille}"] = statistiques_credits.map(lambda x: x[1])
+    print(f"Cumuls CRD {famille} non calculables : {data[f'cumul_crd_{famille}'].isna().sum()}")
+
+# Somme des mensualités des crédits enregistrés, sans filtre sur « conserve ».
+# Une liste vide vaut 0 ; un montant absent ou illisible rend la somme inconnue.
+for famille in ["conso", "immo"]:
+    data[f"total_mensualites_{famille}"] = data[f"{famille}_mensualite"].map(
+        lambda valeur: resumer_credits(valeur)[1]
+    )
+# L'addition conserve NA si l'un des deux totaux est inconnu.
+data["total_mensualites_credits"] = (
+    data["total_mensualites_conso"] + data["total_mensualites_immo"]
+)
+
+# Charges et recette selon les postes retenus pour le projet.
+# L'addition conserve une valeur manquante si un poste est inconnu.
+data["charges"] = (
+    data["pension_versee_emp"]
+    + data["loyer_emp"]
+    + data["charges_loyer_emp"]
+    + data["total_mensualites_credits"]
+    + data["charge_recurrente_emp"]
+    + data["charge_courante_emp"]
+)
+data["charges"] = data["charges"].fillna(0)
+
+data["recette"] = (
+    data["salaire_emp"]
+    + data["rev_foncier_emp"]
+    + data["apl_emp"]
+    + data["pension_alimentaire_emp"]
+    + data["allocation_familiale_emp"]
+    + data["pension_invalidite_emp"]
+)
+
+# Faux si aucune commission n'est renseignée ou si le nombre vaut zéro.
+data["nombre_commissions_intervention"] = data["nombre_commissions_intervention"].fillna(0).ne(0)
+
+# Faux si le montant est absent ou nul, vrai sinon.
+for colonne in ["retard_loyer_emp", "avis_a_tiers_detenteurs_emp", "autre_dette_emp"]:
+    data[colonne] = data[colonne].fillna(0).ne(0)
+
+# Retirer les détails après avoir calculé les totaux et l'horizon retraite.
+data = data.drop(columns=[
+    "apl_emp",
+    "pension_alimentaire_emp",
+    "allocation_familiale_emp",
+    "date_retraite_emp",
+    "saisie_sur_salaire_emp",
+    "salaire_emp",
+    "rev_foncier_emp",
+    "conge_parental_emp",
+    "nature_de_projet",
+    "conso_type",
+    "conso_mensualite",
+    "conso_crd",
+    "conso_taux",
+    "immo_taux",
+    "immo_crd",
+    "immo_garantie",
+    "immo_mensualite",
+    "loyer_emp",
+    "charges_loyer_emp",
+    "charge_recurrente_emp",
+    "charge_courante_emp",
+    "charge_future_eventuelle_emp",
+    "pension_versee_emp",
+])
 
 # Aperçu des données : toutes les colonnes, par groupes adaptés au terminal.
 print("\nLes 5 premières lignes :")
@@ -144,8 +319,22 @@ print(f"\nRésumé consultable dans le navigateur : {chemin_resume}")
 
 import dtale
 
+# Afficher les nouvelles variables en premier pour les retrouver facilement.
+colonnes_en_tete = ["fichage_BDF", "horizon_rdv", "horizon_retraite",
+                    "nombre_credits_conso", "cumul_crd_conso",
+                    "nombre_credits_immo", "cumul_crd_immo",
+                    "total_mensualites_conso", "total_mensualites_immo",
+                    "total_mensualites_credits", "charges", "recette"]
+data_affichage = data[colonnes_en_tete + [
+    colonne for colonne in data.columns if colonne not in colonnes_en_tete
+]].copy()
+print(f"\nFichier exécuté : {Path(__file__).resolve()}")
+print("D-Tale : dossiers sans co-emprunteur uniquement.")
+
+
 dtale.show(
-    data,
+    data_affichage,
+    name="Sans coemprunteur",
     host="127.0.0.1",
     open_browser=True,
     subprocess=False,
