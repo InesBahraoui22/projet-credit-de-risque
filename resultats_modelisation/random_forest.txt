@@ -1,0 +1,17 @@
+Forêt sans SMOTE — seuil 0.5
+Train : 7764 ; test : 1946
+AUC ROC : 0.5627
+Average precision : 0.2527
+
+               precision    recall  f1-score   support
+
+         Fait       0.79      1.00      0.88      1544
+Annulé client       0.50      0.00      0.00       402
+
+     accuracy                           0.79      1946
+    macro avg       0.65      0.50      0.44      1946
+ weighted avg       0.73      0.79      0.70      1946
+
+Matrice (ordre : fait, annulé) :
+[[1543    1]
+ [ 401    1]]

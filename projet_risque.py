@@ -252,7 +252,7 @@ horizon_theorique = age_retraite_legal - age_au_t0
 data["horizon_retraite"] = data["horizon_retraite"].fillna(horizon_theorique)
 print("NA horizon retraite après calcul théorique :", data["horizon_retraite"].isna().sum())
 
-# Découpage chronologique : environ 70 % pour apprendre, 30 % pour tester.
+# Découpage chronologique : environ 80 % pour apprendre, 20 % pour tester.
 dates = pd.to_datetime(data["date_aboutisant_azur"], errors="coerce")
 if dates.isna().any() or data["id_dossier"].isna().any():
     raise ValueError("Le découpage nécessite une date et un identifiant pour chaque ligne.")
@@ -260,7 +260,7 @@ if dates.isna().any() or data["id_dossier"].isna().any():
 # Garder tous les rendez-vous d'une même date du même côté.
 effectifs_par_date = dates.value_counts().sort_index()
 effectifs_avant_date = effectifs_par_date.cumsum().shift(fill_value=0)
-date_coupure = (effectifs_avant_date - 0.70 * len(data)).abs().idxmin()
+date_coupure = (effectifs_avant_date - 0.80 * len(data)).abs().idxmin()
 data_train = data.loc[dates < date_coupure].copy()
 data_test = data.loc[dates >= date_coupure].copy()
 
@@ -295,12 +295,16 @@ situation_frequente = mode_situation.iloc[0]
 for groupe in [data, data_train, data_test]:
     groupe["situation_fam_emp"] = groupe["situation_fam_emp"].fillna(situation_frequente)
     groupe["horizon_retraite"] = groupe["horizon_retraite"].fillna(mediane_horizon)
-    groupe.drop(columns=["date_naissance_emp"], inplace=True)
+    groupe.drop(columns=["date_naissance_emp", "id_dossier", "type_dossier",
+                          "local_agence", "emp_id"], inplace=True)
+    # Un horizon négatif est ramené à zéro.
+    groupe["horizon_retraite"] = groupe["horizon_retraite"].clip(lower=0)
 
 print("Situation familiale utilisée :", situation_frequente)
 print(f"Médiane utilisée pour l'horizon retraite : {mediane_horizon:.2f} ans")
 print("NA restants pour horizon_retraite :", data["horizon_retraite"].isna().sum())
 print("Colonne date_naissance_emp supprimée")
+print("Horizons retraite négatifs restants :", data["horizon_retraite"].lt(0).sum())
 
 # Aperçu des données : toutes les colonnes, par groupes adaptés au terminal.
 print("\nLes 5 premières lignes :")
@@ -421,7 +425,7 @@ from matplotlib.figure import Figure
 # Variables candidates : leur disponibilité à la prise du RDV doit être confirmée.
 # Les identifiants, textes libres et dates brutes ne sont pas des prédicteurs ici.
 variables_modele = [
-    "type_dossier", "situation_fam_emp", "contrat_emp", "nb_enfants_emp",
+    "situation_fam_emp", "contrat_emp", "nb_enfants_emp",
     "assistante_maternelle_emp", "pension_invalidite_emp",
     "retard_loyer_emp", "dette_famille_ami_emp", "retard_impot_emp",
     "decouvert_emp", "autre_dette_emp", "avis_a_tiers_detenteurs_emp",
@@ -438,7 +442,7 @@ X_train = data_train[variables_modele].copy()
 X_test = data_test[variables_modele].copy()
 
 # contrat_emp reste une catégorie, même si ses modalités sont codées en chiffres.
-variables_categories = ["type_dossier", "situation_fam_emp", "contrat_emp"]
+variables_categories = ["situation_fam_emp", "contrat_emp"]
 preparation = ColumnTransformer(
     [("categories", OneHotEncoder(handle_unknown="ignore"), variables_categories)],
     remainder="passthrough",
@@ -486,6 +490,59 @@ ConfusionMatrixDisplay(matrice_rf, display_labels=["Fait", "Annulé"]).plot(
 axes[1].set_title("Matrice de confusion — seuil 0.5")
 figure.savefig(sortie_modele / "random_forest.png", dpi=150)
 print(f"Résultats du modèle : {sortie_modele}")
+
+# Deuxième modèle : un arbre peu profond pour pouvoir lire ses règles.
+from sklearn.base import clone
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from matplotlib.backends.backend_agg import FigureCanvasAgg
+
+# Paramètres fixés avant l'évaluation, sans ajustement sur le test.
+modele_arbre = Pipeline([
+    ("preparation", clone(preparation)),
+    ("arbre", DecisionTreeClassifier(max_depth=3, min_samples_leaf=50, random_state=42)),
+])
+modele_arbre.fit(X_train, y_train)
+probabilites_arbre = modele_arbre.predict_proba(X_test)[:, 1]
+predictions_arbre = (probabilites_arbre >= 0.5).astype(int)
+auc_arbre = roc_auc_score(y_test, probabilites_arbre)
+ap_arbre = average_precision_score(y_test, probabilites_arbre)
+rapport_arbre = classification_report(
+    y_test, predictions_arbre, labels=[0, 1],
+    target_names=["Fait", "Annulé client"], zero_division=0,
+)
+matrice_arbre = confusion_matrix(y_test, predictions_arbre, labels=[0, 1])
+texte_arbre = (
+    f"Arbre sans SMOTE — profondeur maximale 3, minimum 50 observations par feuille\n"
+    f"Seuil : 0.5 ; train : {len(X_train)} ; test : {len(X_test)}\n"
+    f"AUC ROC : {auc_arbre:.4f}\nAverage precision : {ap_arbre:.4f}\n\n"
+    + rapport_arbre + "\nMatrice (ordre : fait, annulé) :\n" + str(matrice_arbre)
+)
+print("\n" + texte_arbre)
+(sortie_modele / "arbre_decision.txt").write_text(texte_arbre, encoding="utf-8")
+
+figure_arbre = Figure(figsize=(22, 10), constrained_layout=True)
+FigureCanvasAgg(figure_arbre)
+axe_arbre = figure_arbre.subplots()
+noms_variables = modele_arbre.named_steps["preparation"].get_feature_names_out()
+plot_tree(
+    modele_arbre.named_steps["arbre"], feature_names=noms_variables,
+    class_names=["Fait", "Annulé"], filled=True, rounded=True,
+    precision=2, fontsize=8, ax=axe_arbre,
+)
+axe_arbre.set_title("Arbre de décision appris sur l'entraînement")
+figure_arbre.savefig(sortie_modele / "arbre_decision.png", dpi=180)
+
+figure_evaluation = Figure(figsize=(11, 4.5), constrained_layout=True)
+axes_arbre = figure_evaluation.subplots(1, 2)
+RocCurveDisplay.from_predictions(
+    y_test, probabilites_arbre, ax=axes_arbre[0], name="Arbre de décision",
+)
+axes_arbre[0].plot([0, 1], [0, 1], "k--", alpha=0.5)
+ConfusionMatrixDisplay(matrice_arbre, display_labels=["Fait", "Annulé"]).plot(
+    ax=axes_arbre[1], colorbar=False, cmap="Blues",
+)
+axes_arbre[1].set_title("Test chronologique — seuil 0.5")
+figure_evaluation.savefig(sortie_modele / "arbre_decision_evaluation.png", dpi=150)
 
 import dtale
 

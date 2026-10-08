@@ -19,4 +19,5 @@ dette_famille_ami_emp,0.0,0.0,257,2.65,0.0,82800.0,IQR nul : règle peu informat
 total_mensualites_immo,-777.0,1295.0,238,2.45,0.0,7903.85,
 charges,-1690.5,2817.5,168,1.73,0.0,9587.85,
 pension_invalidite_emp,0.0,0.0,160,1.65,0.0,3000.0,IQR nul : règle peu informative
-horizon_retraite,-35.31211498973306,51.84462696783025,22,0.24,-263.6605065023956,64.93908281998631,
+horizon_retraite,-29.080082135523615,48.46680355920603,12,0.12,0.0,64.93908281998631,
+contrat_emp,-4.5,7.5,0,0.0,0.0,7.0,

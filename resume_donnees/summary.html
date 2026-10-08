@@ -13,7 +13,7 @@ contenant beaucoup de zéros, la règle est peu informative. Aucune valeur n'est
 pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécessitent un contrôle séparé.</p>
 <nav><a href="#na">Valeurs manquantes</a> · <a href="#nombres">Numériques</a> ·
 <a href="#categories">Qualitatives</a> · <a href="#alertes">Valeurs à examiner</a></nav>
-<p>9,710 lignes — 49 colonnes.</p><h2 id="na">Types et valeurs manquantes</h2><div class="tableau"><table border="1" class="dataframe">
+<p>9,710 lignes — 44 colonnes.</p><h2 id="na">Types et valeurs manquantes</h2><div class="tableau"><table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th></th>
@@ -25,32 +25,18 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
   </thead>
   <tbody>
     <tr>
-      <th>horizon_retraite</th>
+      <th>penalite_remboursement</th>
       <td>float64</td>
-      <td>638</td>
-      <td>6.57</td>
-      <td>5929</td>
-    </tr>
-    <tr>
-      <th>situation_fam_emp</th>
-      <td>object</td>
-      <td>63</td>
-      <td>0.65</td>
-      <td>7</td>
-    </tr>
-    <tr>
-      <th>date_naissance_emp</th>
-      <td>object</td>
-      <td>54</td>
-      <td>0.56</td>
-      <td>5944</td>
-    </tr>
-    <tr>
-      <th>fichage_BDF</th>
-      <td>boolean</td>
       <td>0</td>
       <td>0.00</td>
-      <td>2</td>
+      <td>1255</td>
+    </tr>
+    <tr>
+      <th>frais_notaire</th>
+      <td>int64</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>31</td>
     </tr>
     <tr>
       <th>immo_echeance_de_retard</th>
@@ -109,18 +95,11 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td>2</td>
     </tr>
     <tr>
-      <th>local_agence</th>
-      <td>object</td>
+      <th>fichage_BDF</th>
+      <td>boolean</td>
       <td>0</td>
       <td>0.00</td>
-      <td>38</td>
-    </tr>
-    <tr>
-      <th>type_dossier</th>
-      <td>object</td>
-      <td>0</td>
-      <td>0.00</td>
-      <td>1</td>
+      <td>2</td>
     </tr>
     <tr>
       <th>horizon_rdv</th>
@@ -130,11 +109,11 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td>43</td>
     </tr>
     <tr>
-      <th>conso_echeance_de_retard</th>
-      <td>bool</td>
+      <th>horizon_retraite</th>
+      <td>float64</td>
       <td>0</td>
       <td>0.00</td>
-      <td>2</td>
+      <td>4464</td>
     </tr>
     <tr>
       <th>nombre_credits_conso</th>
@@ -200,7 +179,7 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td>6494</td>
     </tr>
     <tr>
-      <th>tresorerie</th>
+      <th>conso_echeance_de_retard</th>
       <td>bool</td>
       <td>0</td>
       <td>0.00</td>
@@ -214,25 +193,11 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td>2</td>
     </tr>
     <tr>
-      <th>prospect_sms</th>
+      <th>assistante_maternelle_emp</th>
       <td>bool</td>
       <td>0</td>
       <td>0.00</td>
       <td>2</td>
-    </tr>
-    <tr>
-      <th>frais_notaire</th>
-      <td>int64</td>
-      <td>0</td>
-      <td>0.00</td>
-      <td>31</td>
-    </tr>
-    <tr>
-      <th>id_dossier</th>
-      <td>int64</td>
-      <td>0</td>
-      <td>0.00</td>
-      <td>7592</td>
     </tr>
     <tr>
       <th>date_creation</th>
@@ -249,13 +214,6 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td>705</td>
     </tr>
     <tr>
-      <th>emp_id</th>
-      <td>int64</td>
-      <td>0</td>
-      <td>0.00</td>
-      <td>7516</td>
-    </tr>
-    <tr>
       <th>intitule_emp</th>
       <td>object</td>
       <td>0</td>
@@ -268,6 +226,13 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td>0</td>
       <td>0.00</td>
       <td>3066</td>
+    </tr>
+    <tr>
+      <th>situation_fam_emp</th>
+      <td>object</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>7</td>
     </tr>
     <tr>
       <th>consentement_emp</th>
@@ -284,18 +249,11 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td>2</td>
     </tr>
     <tr>
-      <th>assistante_maternelle_emp</th>
+      <th>prospect_sms</th>
       <td>bool</td>
       <td>0</td>
       <td>0.00</td>
       <td>2</td>
-    </tr>
-    <tr>
-      <th>penalite_remboursement</th>
-      <td>float64</td>
-      <td>0</td>
-      <td>0.00</td>
-      <td>1255</td>
     </tr>
     <tr>
       <th>pension_invalidite_emp</th>
@@ -305,11 +263,18 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td>107</td>
     </tr>
     <tr>
-      <th>contrat_emp</th>
-      <td>object</td>
+      <th>tresorerie</th>
+      <td>bool</td>
       <td>0</td>
       <td>0.00</td>
-      <td>9</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>contrat_emp</th>
+      <td>int64</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>8</td>
     </tr>
     <tr>
       <th>nb_enfants_emp</th>
@@ -418,36 +383,6 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td>0</td>
     </tr>
     <tr>
-      <th>id_dossier</th>
-      <td>9,710.00</td>
-      <td>2,640,206.75</td>
-      <td>171,790.21</td>
-      <td>2,221,046.00</td>
-      <td>2,515,557.00</td>
-      <td>2,691,214.00</td>
-      <td>2,780,979.25</td>
-      <td>2,875,576.00</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>emp_id</th>
-      <td>9,710.00</td>
-      <td>3,503,131.75</td>
-      <td>299,264.72</td>
-      <td>547,164.00</td>
-      <td>3,338,639.00</td>
-      <td>3,593,087.50</td>
-      <td>3,719,230.00</td>
-      <td>3,847,545.00</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-    <tr>
       <th>pension_invalidite_emp</th>
       <td>9,710.00</td>
       <td>15.37</td>
@@ -460,6 +395,21 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td>0</td>
       <td>0</td>
       <td>9550</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>contrat_emp</th>
+      <td>9,710.00</td>
+      <td>1.40</td>
+      <td>1.87</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>3.00</td>
+      <td>7.00</td>
+      <td>0</td>
+      <td>0</td>
+      <td>5780</td>
       <td>0</td>
     </tr>
     <tr>
@@ -584,18 +534,18 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
     </tr>
     <tr>
       <th>horizon_retraite</th>
-      <td>9,072.00</td>
-      <td>8.85</td>
-      <td>14.25</td>
-      <td>-263.66</td>
-      <td>-2.63</td>
-      <td>9.39</td>
-      <td>19.16</td>
+      <td>9,710.00</td>
+      <td>11.38</td>
+      <td>11.04</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>9.68</td>
+      <td>19.39</td>
       <td>64.94</td>
-      <td>638</td>
       <td>0</td>
-      <td>2</td>
-      <td>2725</td>
+      <td>0</td>
+      <td>2868</td>
+      <td>0</td>
     </tr>
     <tr>
       <th>nombre_credits_conso</th>
@@ -746,14 +696,6 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
   </thead>
   <tbody>
     <tr>
-      <th>type_dossier</th>
-      <td>9710</td>
-      <td>1</td>
-      <td>proprietaire</td>
-      <td>9710</td>
-      <td>0</td>
-    </tr>
-    <tr>
       <th>date_creation</th>
       <td>9710</td>
       <td>875</td>
@@ -768,14 +710,6 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td>2026-05-18</td>
       <td>49</td>
       <td>0</td>
-    </tr>
-    <tr>
-      <th>date_naissance_emp</th>
-      <td>9656</td>
-      <td>5944</td>
-      <td>1969-05-13</td>
-      <td>10</td>
-      <td>54</td>
     </tr>
     <tr>
       <th>intitule_emp</th>
@@ -795,11 +729,11 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
     </tr>
     <tr>
       <th>situation_fam_emp</th>
-      <td>9647</td>
+      <td>9710</td>
       <td>7</td>
       <td>Célibataire</td>
-      <td>4383</td>
-      <td>63</td>
+      <td>4446</td>
+      <td>0</td>
     </tr>
     <tr>
       <th>consentement_emp</th>
@@ -831,14 +765,6 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td>2</td>
       <td>False</td>
       <td>9692</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>contrat_emp</th>
-      <td>9710</td>
-      <td>9</td>
-      <td>CDI</td>
-      <td>5780</td>
       <td>0</td>
     </tr>
     <tr>
@@ -938,14 +864,6 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td>0</td>
     </tr>
     <tr>
-      <th>local_agence</th>
-      <td>9710</td>
-      <td>38</td>
-      <td>POISSY</td>
-      <td>693</td>
-      <td>0</td>
-    </tr>
-    <tr>
       <th>fichage_BDF</th>
       <td>9710</td>
       <td>2</td>
@@ -970,7 +888,7 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
   </thead>
   <tbody>
     <tr>
-      <th>8</th>
+      <th>9</th>
       <td>valeur_totale</td>
       <td>0.00</td>
       <td>0.00</td>
@@ -981,7 +899,7 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td>IQR nul : règle peu informative</td>
     </tr>
     <tr>
-      <th>3</th>
+      <th>4</th>
       <td>nb_enfants_emp</td>
       <td>0.00</td>
       <td>0.00</td>
@@ -992,7 +910,7 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td>IQR nul : règle peu informative</td>
     </tr>
     <tr>
-      <th>20</th>
+      <th>21</th>
       <td>recette</td>
       <td>185.60</td>
       <td>4,789.54</td>
@@ -1014,7 +932,7 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td></td>
     </tr>
     <tr>
-      <th>9</th>
+      <th>10</th>
       <td>nombre_rejets</td>
       <td>0.00</td>
       <td>0.00</td>
@@ -1025,7 +943,7 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td>IQR nul : règle peu informative</td>
     </tr>
     <tr>
-      <th>10</th>
+      <th>11</th>
       <td>horizon_rdv</td>
       <td>-1.50</td>
       <td>10.50</td>
@@ -1036,7 +954,7 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td></td>
     </tr>
     <tr>
-      <th>15</th>
+      <th>16</th>
       <td>cumul_crd_immo</td>
       <td>-96,512.91</td>
       <td>160,854.84</td>
@@ -1047,7 +965,7 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td></td>
     </tr>
     <tr>
-      <th>16</th>
+      <th>17</th>
       <td>total_mensualites_conso</td>
       <td>-319.85</td>
       <td>1,775.91</td>
@@ -1058,7 +976,7 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td></td>
     </tr>
     <tr>
-      <th>18</th>
+      <th>19</th>
       <td>total_mensualites_credits</td>
       <td>-282.88</td>
       <td>2,217.73</td>
@@ -1069,7 +987,7 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td></td>
     </tr>
     <tr>
-      <th>13</th>
+      <th>14</th>
       <td>cumul_crd_conso</td>
       <td>-24,711.52</td>
       <td>96,791.71</td>
@@ -1080,7 +998,7 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td></td>
     </tr>
     <tr>
-      <th>5</th>
+      <th>6</th>
       <td>retard_impot_emp</td>
       <td>0.00</td>
       <td>0.00</td>
@@ -1091,7 +1009,7 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td>IQR nul : règle peu informative</td>
     </tr>
     <tr>
-      <th>12</th>
+      <th>13</th>
       <td>nombre_credits_conso</td>
       <td>-1.00</td>
       <td>7.00</td>
@@ -1102,7 +1020,7 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td></td>
     </tr>
     <tr>
-      <th>6</th>
+      <th>7</th>
       <td>decouvert_emp</td>
       <td>-1,500.00</td>
       <td>2,500.00</td>
@@ -1124,7 +1042,7 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td></td>
     </tr>
     <tr>
-      <th>7</th>
+      <th>8</th>
       <td>valeur_bien_mobilier</td>
       <td>0.00</td>
       <td>0.00</td>
@@ -1135,7 +1053,7 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td>IQR nul : règle peu informative</td>
     </tr>
     <tr>
-      <th>14</th>
+      <th>15</th>
       <td>nombre_credits_immo</td>
       <td>-1.50</td>
       <td>2.50</td>
@@ -1146,7 +1064,7 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td></td>
     </tr>
     <tr>
-      <th>4</th>
+      <th>5</th>
       <td>dette_famille_ami_emp</td>
       <td>0.00</td>
       <td>0.00</td>
@@ -1157,7 +1075,7 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td>IQR nul : règle peu informative</td>
     </tr>
     <tr>
-      <th>17</th>
+      <th>18</th>
       <td>total_mensualites_immo</td>
       <td>-777.00</td>
       <td>1,295.00</td>
@@ -1168,7 +1086,7 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td></td>
     </tr>
     <tr>
-      <th>19</th>
+      <th>20</th>
       <td>charges</td>
       <td>-1,690.50</td>
       <td>2,817.50</td>
@@ -1190,14 +1108,25 @@ pas encore analysés comme des nombres. Les dates et valeurs sentinelles nécess
       <td>IQR nul : règle peu informative</td>
     </tr>
     <tr>
-      <th>11</th>
+      <th>12</th>
       <td>horizon_retraite</td>
-      <td>-35.31</td>
-      <td>51.84</td>
-      <td>22</td>
-      <td>0.24</td>
-      <td>-263.66</td>
+      <td>-29.08</td>
+      <td>48.47</td>
+      <td>12</td>
+      <td>0.12</td>
+      <td>0.00</td>
       <td>64.94</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>contrat_emp</td>
+      <td>-4.50</td>
+      <td>7.50</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>7.00</td>
       <td></td>
     </tr>
   </tbody>
