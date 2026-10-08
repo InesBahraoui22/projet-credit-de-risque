@@ -8,7 +8,7 @@ Projet de classification pour prédire l'annulation d'un rendez-vous client : **
 - Traitement des valeurs manquantes et encodage des catégories.
 - Création d'indicateurs : charges, recettes, crédits, mensualités et horizons RDV/retraite.
 
-Le script `projet_risque.py` produit une base nettoyée de **9 710 observations et 44 colonnes** et utilise **29 variables explicatives** pour ses modèles.
+Le script produit une base nettoyée de **9 710 observations et 44 colonnes** et utilise **29 variables explicatives** pour ses modèles.
 
 ## Modèles
 
