@@ -1,0 +1,12 @@
+{
+  "lignes_nettoyees": 9710,
+  "train": 7764,
+  "test": 1946,
+  "variables": 34,
+  "taux_annulation_train": 0.1253219989696033,
+  "taux_annulation_test": 0.2065775950668037,
+  "poids_xgboost": 6.979445015416238,
+  "date_debut_test": "2026-05-15",
+  "seuil": 0.5,
+  "smote": false
+}

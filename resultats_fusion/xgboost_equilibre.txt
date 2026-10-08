@@ -1,0 +1,13 @@
+Seuil fixé à 0.5
+              precision    recall  f1-score   support
+
+        Fait       0.84      0.68      0.75      1544
+      Annulé       0.28      0.50      0.36       402
+
+    accuracy                           0.64      1946
+   macro avg       0.56      0.59      0.55      1946
+weighted avg       0.72      0.64      0.67      1946
+
+Matrice : lignes réelles, colonnes prédites (fait, annulé)
+[[1044  500]
+ [ 203  199]]
