@@ -27,13 +27,13 @@ Ouvrir `Projet_Risque_Credit.ipynb`, ou lancer depuis la racine du dépôt :
 
 ```bash
 python3 -m pip install -r requirements.txt
-python3 -m projet_risque.comparaison_modeles --data ~/Downloads/data.csv
+python3 projet_risque/projet_risque_m.py --data ~/Downloads/data.csv
 ```
 
 Cette version compare la régression logistique, la forêt aléatoire, l'arbre de décision et XGBoost (simple et pondéré), avec les mêmes variables et le même découpage chronologique 80/20. Le seuil est fixé à 0,5 ; le SMOTE n'est pas appliqué. Les scores et courbes sont enregistrés dans `resultats_fusion/`.
 
 Le notebook fourni apporte notamment le jour et l'heure du rendez-vous, la civilité, le reste à vivre et la présence d'un découvert. Les montants manquants des charges et recettes sont remplacés par zéro avant leur somme : c'est une hypothèse de préparation. La médiane, le mode et l'encodage sont appris uniquement sur l'entraînement. Les identifiants, dates brutes, textes libres et `statut_final` sont exclus des prédicteurs. La disponibilité des variables à la prise du rendez-vous reste à confirmer.
 
-Le fichier historique `projet_risque/projet_risque_m.py` est conservé. Pour la comparaison commune, utiliser le nouveau notebook ou la commande ci-dessus. Les anciens scores obtenus sur d'autres découpages ne sont pas directement comparables.
+Toute la préparation et tous les modèles sont regroupés dans `projet_risque/projet_risque_m.py`. Le notebook appelle ce même fichier. Les anciens scores obtenus sur d'autres découpages ne sont pas directement comparables.
 
 Sur macOS, si XGBoost signale l'absence de `libomp`, installer cette dépendance avec `brew install libomp`.
