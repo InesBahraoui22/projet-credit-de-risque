@@ -1,65 +1,27 @@
 Variable,N valides,Modalités,Modalité fréquente,Fréquence,NA
-type_dossier,22588,1,proprietaire,22588,0
-segmentation,14199,8,Proprietaire,14086,8389
-date_creation,22588,921,2026-01-14,105,0
-date_aboutisant_azur,22588,719,2026-05-26,92,0
-type_traitement_dossier,22588,3,classique,21302,0
-affectation,22588,3,CAN,17902,0
-type_support,22588,4,Internet,14613,0
-date_naissance_emp,22531,10937,1970-01-01,16,57
-intitule_emp,22588,2,Monsieur,13930,0
-cp_emp,22588,4132,29200,74,0
-situation_fam_emp,22518,7,Marié(e),10507,70
-consentement_emp,22588,2,False,18014,0
-accept_emailing,22588,2,True,19326,0
-prospect_sms,22588,2,False,13371,0
-commentaire,22231,16855,Profil budget = baisser les mensualité // avoir un meilleur reste à vivre ,87,357
-date_naissance_coemp,12863,7390,1970-01-01,35,9725
-intitule_coemp,12872,2,Monsieur,6765,9716
-situation_fam_coemp,12838,7,Marié(e),9747,9750
-consentement_coemp,12872,2,False,11497,9716
-profession_emp,22189,8247,Retraité,1402,399
-assistante_maternelle_emp,22588,2,False,22513,0
-type_invalidite_emp,379,47,2,184,22209
-contrat_emp,22103,8,CDI,14640,485
-date_retraite_emp,21402,10703,0000-00-00,97,1186
-nature_de_projet,11778,3618,épargne,1625,10810
-conso_type,22588,256,"['inconnu', 'inconnu']",5075,0
-conso_mensualite,22588,16325,[],526,0
-conso_crd,22588,15693,[],526,0
-conso_echeance_de_retard,22588,210,"[0, 0]",5338,0
-conso_conserve,22588,27,"[False, False]",5407,0
-conso_date_debut,22588,869,"['', '']",4591,0
-conso_date_fin,22588,843,"['', '']",4600,0
-conso_duree,22588,42,"[None, None]",5136,0
-conso_taux,22588,722,"[None, None]",4873,0
-conso_libelle,22588,15054,[],982,0
-immo_garantie,22588,37,[],12856,0
-immo_mensualite,22588,3927,[],12856,0
-immo_crd,22588,4123,[],12856,0
-immo_echeance_de_retard,22588,29,[],12856,0
-immo_conserve,22588,11,[],12856,0
-immo_date_debut,22588,261,[],12856,0
-immo_date_fin,22588,347,[],12856,0
-immo_duree,22588,16,[],12856,0
-immo_taux,22588,218,[],12856,0
-immo_libelle,22588,5725,[],13027,0
-fichage_FCC_cheque,22588,2,False,22584,0
-fichage_FCC_carte,22588,2,False,22585,0
-fichage_FICP,22588,2,False,22587,0
-date_deja_rachat,295,199,2019-01-01,7,22293
-hebergement_gratuit_emp,0,0,,,22588
-date_acquisition,17874,796,Invalid date,9227,4714
-profession_coemp,12193,4766,retraité,500,10395
-assistante_maternelle_coemp,12872,2,False,12834,9716
-type_invalidite_coemp,274,35,2,129,22314
-contrat_coemp,12128,8,CDI,7605,10460
-date_retraite_coemp,9399,5804,0000-00-00,34,13189
-hebergement_gratuit_coemp,2000,1,Parent,2000,20588
-contrat_mariage_coemp,1142,1,Communauté réduite aux acquêts avec aménagements,1142,21446
-contrat_mariage_emp,9635,2,Communauté réduite aux acquêts avec aménagements,9630,12953
-date_rdv,22588,650,2026-03-16,86,0
-heure_rdv_debut,22588,77,18:00:00,3524,0
-etat,22588,2,fait,19150,0
-statut_final,22588,11,refus_commercial,17249,0
-local_agence,22588,38,POISSY,1545,0
+type_dossier,9710,1,proprietaire,9710,0
+date_creation,9710,875,2026-01-14,48,0
+date_aboutisant_azur,9710,705,2026-05-18,49,0
+date_naissance_emp,9656,5944,1969-05-13,10,54
+intitule_emp,9710,2,Monsieur,5454,0
+cp_emp,9710,3066,29200,38,0
+situation_fam_emp,9647,7,Célibataire,4383,63
+consentement_emp,9710,2,False,7959,0
+accept_emailing,9710,2,True,8406,0
+prospect_sms,9710,2,False,6110,0
+assistante_maternelle_emp,9710,2,False,9692,0
+contrat_emp,9710,9,CDI,5780,0
+retard_loyer_emp,9710,2,False,9705,0
+autre_dette_emp,9710,2,False,9575,0
+avis_a_tiers_detenteurs_emp,9710,2,False,9705,0
+tresorerie,9710,2,True,6673,0
+tresorerie_sur_facture,9710,2,False,9556,0
+conso_echeance_de_retard,9710,2,False,9452,0
+conso_libelle,9710,6494,[],513,0
+immo_echeance_de_retard,9710,2,False,9661,0
+nombre_commissions_intervention,9710,2,False,9673,0
+date_rdv,9710,624,2026-05-21,47,0
+heure_rdv_debut,9710,61,18:00:00,1351,0
+etat,9710,2,fait,8335,0
+local_agence,9710,38,POISSY,693,0
+fichage_BDF,9710,2,False,9709,0

@@ -36,6 +36,12 @@ print(f"Doublons supprimés : {nb_doublons} ; lignes restantes : {len(data)}")
 
 # Colonnes retirées pour le nettoyage (noms tels qu'ils figurent dans le CSV).
 colonnes_a_supprimer = [
+    "statut_final",
+    "affectation",
+    "duree",
+    "type_traitement_dossier",
+    "type_support",
+    "profession_emp",
     "conso_date_debut",
     "conso_date_fin",
     "conso_duree",
@@ -109,7 +115,6 @@ print(data["etat"].value_counts(dropna=False))
 date_prise_rdv = pd.to_datetime(data["date_aboutisant_azur"], format="%Y-%m-%d", errors="coerce")
 date_rendez_vous = pd.to_datetime(data["date_rdv"], format="%Y-%m-%d", errors="coerce")
 data["horizon_rdv"] = (date_rendez_vous - date_prise_rdv).dt.days
-print(f"\nHorizons RDV négatifs à vérifier : {data['horizon_rdv'].lt(0).sum()}")
 
 # Années restantes avant la retraite à la date de prise du rendez-vous.
 # Une valeur négative signifie que la date de retraite indiquée est déjà passée.
@@ -117,6 +122,12 @@ print(f"\nHorizons RDV négatifs à vérifier : {data['horizon_rdv'].lt(0).sum()
 # en années approximatives, sans arrondir les valeurs utilisées pour l'analyse.
 date_retraite = pd.to_datetime(data["date_retraite_emp"], format="%Y-%m-%d", errors="coerce")
 data["horizon_retraite"] = (date_retraite - date_prise_rdv).dt.days / 365.25
+
+# Supprimer les rendez-vous antérieurs à leur date de prise.
+rdv_avant_prise = data["horizon_rdv"].lt(0)
+nb_rdv_supprimes = int(rdv_avant_prise.sum())
+data = data.loc[~rdv_avant_prise].copy()
+print(f"Rendez-vous antérieurs supprimés : {nb_rdv_supprimes} ; lignes restantes : {len(data)}")
 
 # Les capitaux restants dus (CRD) sont stockés comme des listes de montants.
 # Exemple : "[1000, 2500]" -> 2 crédits et 3500 de capital restant dû.
@@ -210,6 +221,86 @@ data = data.drop(columns=[
     "charge_future_eventuelle_emp",
     "pension_versee_emp",
 ])
+
+# Un code fixe par contrat ; INCONNU et inconnu désignent la même catégorie.
+codage_contrat = {
+    "CDI": 0,
+    "CDD": 1,
+    "INTERIM": 2,
+    "RETRAITE": 3,
+    "TNS": 4,
+    "PROFESSION LIBERALE": 5,
+    "SANS EMPLOI": 6,
+    "INCONNU": 7,
+}
+contrats = data["contrat_emp"].fillna("INCONNU").str.strip().str.upper()
+if not contrats.isin(codage_contrat).all():
+    raise ValueError("Une nouvelle catégorie de contrat doit être ajoutée au codage.")
+data["contrat_emp"] = contrats.map(codage_contrat).astype(int)
+print("Codage contrat_emp :", codage_contrat)
+
+# Remplacer les montants manquants par zéro pour ces trois colonnes.
+for colonne in ["dette_famille_ami_emp", "retard_impot_emp", "decouvert_emp"]:
+    data[colonne] = data[colonne].fillna(0)
+
+# Compléter l'horizon retraite avec l'hypothèse d'un départ à 64 ans.
+age_retraite_legal = 64
+naissance = pd.to_datetime(data["date_naissance_emp"], errors="coerce")
+date_dossier = pd.to_datetime(data["date_aboutisant_azur"], errors="coerce")
+age_au_t0 = (date_dossier - naissance).dt.days / 365.25
+horizon_theorique = age_retraite_legal - age_au_t0
+data["horizon_retraite"] = data["horizon_retraite"].fillna(horizon_theorique)
+print("NA horizon retraite après calcul théorique :", data["horizon_retraite"].isna().sum())
+
+# Découpage chronologique : environ 70 % pour apprendre, 30 % pour tester.
+dates = pd.to_datetime(data["date_aboutisant_azur"], errors="coerce")
+if dates.isna().any() or data["id_dossier"].isna().any():
+    raise ValueError("Le découpage nécessite une date et un identifiant pour chaque ligne.")
+
+# Garder tous les rendez-vous d'une même date du même côté.
+effectifs_par_date = dates.value_counts().sort_index()
+effectifs_avant_date = effectifs_par_date.cumsum().shift(fill_value=0)
+date_coupure = (effectifs_avant_date - 0.70 * len(data)).abs().idxmin()
+data_train = data.loc[dates < date_coupure].copy()
+data_test = data.loc[dates >= date_coupure].copy()
+
+# Écarter de l'entraînement les dossiers également présents dans le test.
+dossiers_communs = data_train["id_dossier"].isin(data_test["id_dossier"])
+nb_lignes_ecartees = int(dossiers_communs.sum())
+data_train = data_train.loc[~dossiers_communs].copy()
+data_train = data_train.sort_values("date_aboutisant_azur")
+data_test = data_test.sort_values("date_aboutisant_azur")
+
+# La cible : 0 = fait, 1 = annulé client.
+codage_etat = {"fait": 0, "annuler client": 1}
+y_train = data_train["etat"].str.strip().str.lower().map(codage_etat)
+y_test = data_test["etat"].str.strip().str.lower().map(codage_etat)
+if y_train.isna().any() or y_test.isna().any():
+    raise ValueError("Un état ne correspond ni à fait ni à annuler client.")
+
+print(f"\nDébut du test : {date_coupure:%d/%m/%Y}")
+print(f"Lignes écartées de l'entraînement pour éviter les dossiers communs : {nb_lignes_ecartees}")
+for nom, groupe, cible in [("Entraînement", data_train, y_train),
+                           ("Test", data_test, y_test)]:
+    print(f"{nom} : {len(groupe)} lignes ; {100 * cible.mean():.2f} % d'annulations")
+
+# Apprendre les valeurs de remplacement uniquement sur l'entraînement.
+mode_situation = data_train["situation_fam_emp"].mode()
+mediane_horizon = data_train["horizon_retraite"].median()
+if mode_situation.empty or pd.isna(mediane_horizon):
+    raise ValueError("Pas assez de valeurs renseignées dans l'entraînement pour imputer.")
+situation_frequente = mode_situation.iloc[0]
+
+# Utiliser les mêmes valeurs pour la base affichée, l'entraînement et le test.
+for groupe in [data, data_train, data_test]:
+    groupe["situation_fam_emp"] = groupe["situation_fam_emp"].fillna(situation_frequente)
+    groupe["horizon_retraite"] = groupe["horizon_retraite"].fillna(mediane_horizon)
+    groupe.drop(columns=["date_naissance_emp"], inplace=True)
+
+print("Situation familiale utilisée :", situation_frequente)
+print(f"Médiane utilisée pour l'horizon retraite : {mediane_horizon:.2f} ans")
+print("NA restants pour horizon_retraite :", data["horizon_retraite"].isna().sum())
+print("Colonne date_naissance_emp supprimée")
 
 # Aperçu des données : toutes les colonnes, par groupes adaptés au terminal.
 print("\nLes 5 premières lignes :")
@@ -316,6 +407,85 @@ rapport += "</html>"
 chemin_resume = sortie_resume / "summary.html"
 chemin_resume.write_text(rapport, encoding="utf-8")
 print(f"\nRésumé consultable dans le navigateur : {chemin_resume}")
+
+# Premier modèle : forêt aléatoire sans SMOTE.
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.pipeline import Pipeline
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import (roc_auc_score, average_precision_score,
+                             classification_report, confusion_matrix,
+                             RocCurveDisplay, ConfusionMatrixDisplay)
+from matplotlib.figure import Figure
+
+# Variables candidates : leur disponibilité à la prise du RDV doit être confirmée.
+# Les identifiants, textes libres et dates brutes ne sont pas des prédicteurs ici.
+variables_modele = [
+    "type_dossier", "situation_fam_emp", "contrat_emp", "nb_enfants_emp",
+    "assistante_maternelle_emp", "pension_invalidite_emp",
+    "retard_loyer_emp", "dette_famille_ami_emp", "retard_impot_emp",
+    "decouvert_emp", "autre_dette_emp", "avis_a_tiers_detenteurs_emp",
+    "tresorerie", "tresorerie_sur_facture",
+    "conso_echeance_de_retard", "immo_echeance_de_retard",
+    "nombre_rejets", "nombre_commissions_intervention", "fichage_BDF",
+    "horizon_rdv", "horizon_retraite",
+    "nombre_credits_conso", "cumul_crd_conso",
+    "nombre_credits_immo", "cumul_crd_immo",
+    "total_mensualites_conso", "total_mensualites_immo",
+    "total_mensualites_credits", "charges", "recette",
+]
+X_train = data_train[variables_modele].copy()
+X_test = data_test[variables_modele].copy()
+
+# contrat_emp reste une catégorie, même si ses modalités sont codées en chiffres.
+variables_categories = ["type_dossier", "situation_fam_emp", "contrat_emp"]
+preparation = ColumnTransformer(
+    [("categories", OneHotEncoder(handle_unknown="ignore"), variables_categories)],
+    remainder="passthrough",
+)
+modele_rf = Pipeline([
+    ("preparation", preparation),
+    ("foret", RandomForestClassifier(n_estimators=300, random_state=42, n_jobs=-1)),
+])
+modele_rf.fit(X_train, y_train)
+
+# Probabilité d'annulation et décision avec un seuil fixé à 0.5.
+probabilites_rf = modele_rf.predict_proba(X_test)[:, 1]
+predictions_rf = (probabilites_rf >= 0.5).astype(int)
+auc_rf = roc_auc_score(y_test, probabilites_rf)
+ap_rf = average_precision_score(y_test, probabilites_rf)
+rapport_rf = classification_report(
+    y_test, predictions_rf, labels=[0, 1],
+    target_names=["Fait", "Annulé client"], zero_division=0,
+)
+matrice_rf = confusion_matrix(y_test, predictions_rf, labels=[0, 1])
+print(f"\nRandom Forest sans SMOTE — AUC ROC : {auc_rf:.3f}")
+print(f"Average precision : {ap_rf:.3f}")
+print(rapport_rf)
+print("Matrice : lignes = réalité, colonnes = prédiction ; ordre = fait, annulé")
+print(matrice_rf)
+
+# Enregistrer les résultats et les graphiques avant l'ouverture de D-Tale.
+sortie_modele = Path(__file__).resolve().parent / "resultats_modelisation"
+sortie_modele.mkdir(exist_ok=True)
+(sortie_modele / "random_forest.txt").write_text(
+    f"Forêt sans SMOTE — seuil 0.5\n"
+    f"Train : {len(X_train)} ; test : {len(X_test)}\n"
+    f"AUC ROC : {auc_rf:.4f}\nAverage precision : {ap_rf:.4f}\n\n"
+    + rapport_rf + "\nMatrice (ordre : fait, annulé) :\n" + str(matrice_rf),
+    encoding="utf-8",
+)
+figure = Figure(figsize=(11, 4.5), constrained_layout=True)
+axes = figure.subplots(1, 2)
+RocCurveDisplay.from_predictions(y_test, probabilites_rf, ax=axes[0], name="Random Forest")
+axes[0].plot([0, 1], [0, 1], "k--", alpha=0.5)
+axes[0].set_title("Courbe ROC — test chronologique")
+ConfusionMatrixDisplay(matrice_rf, display_labels=["Fait", "Annulé"]).plot(
+    ax=axes[1], colorbar=False, cmap="Blues",
+)
+axes[1].set_title("Matrice de confusion — seuil 0.5")
+figure.savefig(sortie_modele / "random_forest.png", dpi=150)
+print(f"Résultats du modèle : {sortie_modele}")
 
 import dtale
 
